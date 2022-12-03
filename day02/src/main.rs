@@ -25,15 +25,19 @@ fn solve(input: &str) -> (i32, i32) {
 			(l, r)
 		})
 		.try_fold((0, 0), |(mut s1, mut s2), (l, r)| {
-			let l = (l.bytes().nth(0)? - b'A') as i32;
-			let r = (r.bytes().nth(0)? - b'X') as i32;
+			let l = (l.bytes().nth(0)? - b'A') as i32 + 1;
+			let r = (r.bytes().nth(0)? - b'X') as i32 + 1;
 
-			s1 += r + 1 + (3 * ((r - l + 4) % 3));
-			s2 += r * 3 + (l + r + 2) % 3 + 1;
+			s1 += score(l, r);
+			s2 += score(l, 1 + (l + r) % 3);
 
 			Some((s1, s2))
 		})
 		.expect("No moves parsed.")
+}
+
+fn score(l: i32, r: i32) -> i32 {
+	(4 + r - l) % 3 * 3 + r
 }
 
 #[cfg(test)]
