@@ -17,9 +17,7 @@ fn main() -> Result<()> {
 
 fn part1(input: &str) -> u32 {
     input
-        .trim()
         .lines()
-        .map(|l| l.trim())
         .map(|s| {
             let (l, r) = s.split_at(s.len() / 2);
             (bits(l) & bits(r)).trailing_zeros()
@@ -29,11 +27,9 @@ fn part1(input: &str) -> u32 {
 
 fn part2(input: &str) -> u32 {
     input
-        .trim()
         .lines()
-        .map(|l| l.trim())
-        .array_chunks()
-        .filter_map(|c: [_; 3]| {
+        .array_chunks::<3>()
+        .filter_map(|c| {
             c.into_iter()
                 .map(bits)
                 .reduce(|l, r| l & r)
@@ -43,7 +39,7 @@ fn part2(input: &str) -> u32 {
 }
 
 fn bits(s: &str) -> u64 {
-    s.bytes().fold(0, |acc, b| acc | (1_u64 << prio(b)))
+    s.bytes().fold(0_u64, |acc, b| acc | (1 << prio(b)))
 }
 
 fn prio(x: u8) -> u8 {
@@ -58,27 +54,20 @@ fn prio(x: u8) -> u8 {
 mod tests {
     use super::*;
 
+    const INPUT: &str = r#"vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg
+wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw"#;
+
     #[test]
     fn part1_example() {
-        let input = r#"
-			vJrwpWtwJgWrhcsFMMfFFhFp
-			jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
-			PmmdzqPrVvPwwTWBwg
-			wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
-			ttgJtRGJQctTZtZT
-			CrZsJsPPZsGzwwsLwLmpwMDw"#;
-        assert_eq!(part1(&input), 157);
+        assert_eq!(part1(INPUT), 157);
     }
 
     #[test]
     fn part2_example() {
-        let input = r#"
-			vJrwpWtwJgWrhcsFMMfFFhFp
-			jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
-			PmmdzqPrVvPwwTWBwg
-			wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
-			ttgJtRGJQctTZtZT
-			CrZsJsPPZsGzwwsLwLmpwMDw"#;
-        assert_eq!(part2(&input), 70);
+        assert_eq!(part2(INPUT), 70);
     }
 }

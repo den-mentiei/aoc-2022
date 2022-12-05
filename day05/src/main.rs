@@ -67,12 +67,13 @@ fn parse_stacks(input: &str) -> HashMap<usize, Vec<u8>> {
         .rev()
         .flat_map(|s| {
             s.as_bytes()
-                .chunks(4)
+                .iter()
+                .skip(1)
+                .step_by(4)
                 .enumerate()
-                .filter_map(|(i, c)| c.get(1).map(|c| (i, *c)))
                 .filter(|(_, c)| c.is_ascii_uppercase())
         })
-        .fold(HashMap::new(), |mut acc, (i, c)| {
+        .fold(HashMap::new(), |mut acc, (i, &c)| {
             acc.entry(i).or_insert_with(Vec::new).push(c);
             acc
         })
@@ -82,9 +83,7 @@ fn parse_stacks(input: &str) -> HashMap<usize, Vec<u8>> {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example() {
-        let input = r#"    [D]
+    const INPUT: &str = r#"    [D]
 [N] [C]
 [Z] [M] [P]
  1   2   3
@@ -94,21 +93,14 @@ move 3 from 1 to 3
 move 2 from 2 to 1
 move 1 from 1 to 2
 "#;
-        assert_eq!(part1(&input), "CMZ");
+
+    #[test]
+    fn part1_example() {
+        assert_eq!(part1(INPUT), "CMZ");
     }
 
     #[test]
     fn part2_example() {
-        let input = r#"    [D]
-[N] [C]
-[Z] [M] [P]
- 1   2   3
-
-move 1 from 2 to 1
-move 3 from 1 to 3
-move 2 from 2 to 1
-move 1 from 1 to 2
-"#;
-        assert_eq!(part2(&input), "MCD");
+        assert_eq!(part2(INPUT), "MCD");
     }
 }
