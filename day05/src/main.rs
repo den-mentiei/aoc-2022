@@ -40,12 +40,12 @@ fn solve<const REV: bool>(input: &str) -> String {
             }
             Some(acc)
         })
-        .and_then(|m| {
-            (0..m.len()).try_fold(String::with_capacity(m.len()), |mut acc, i| {
-                let c = m.get(&i).and_then(|v| v.last()).copied()? as char;
-                acc.push(c);
-                Some(acc)
-            })
+        .map(|m| {
+            String::from_iter(
+                (0..m.len())
+                    .filter_map(|i| m.get(&i).and_then(|v| v.last()).copied())
+                    .map(Into::<char>::into),
+            )
         })
         .unwrap_or_default()
 }
