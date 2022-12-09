@@ -12,10 +12,15 @@ $ ./day
 This will bootstrap today's solution and download the inputs.
 Template is contained in `boilerplate.rs`.
 
+If you skipped a day, you can still do it via:
+```bash
+$ ./day <day-number>
+```
+
 ## Setup
 
 To download task inputs, the session cookie is required.
-Ypu can get one inspecting the headers of AOC website response,
+You can get one inspecting the headers of AOC website response,
 when you are logged in.
 
 Day script looks for it in `.env` file, in the following form:
