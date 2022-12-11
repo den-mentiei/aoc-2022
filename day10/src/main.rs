@@ -1,8 +1,7 @@
 #![feature(iter_repeat_n)]
 
-use std::fmt::Write;
 use std::io::{self, Read};
-use std::iter::repeat_n;
+use std::iter;
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Result<T, E = Error> = std::result::Result<T, E>;
@@ -18,41 +17,42 @@ fn main() -> Result<()> {
 	Ok(())
 }
 
+const W: usize = 40;
+const H: usize = 6;
+
 fn part1(input: &str) -> isize {
 	signal(input)
 		.map(|(x, i)| (x, i + 1))
 		.map(|(x, i)| match i {
-			20 | 60 | 100 | 140 | 180 | 220 => x * (i as isize),
+			i if i % W == 20 => x * (i as isize),
 			_ => 0,
 		})
 		.sum()
 }
 
 fn part2(input: &str) -> String {
-	const W: usize = 40;
-	const H: usize = 6;
-	let mut crt = [false; W * H];
-
 	signal(input)
-		.take(239)
-		.for_each(|(s, c)| {
-			let y = c / 40;
-			let x = c % 40;
-			crt[y * W + x] = s - 1 <= (x as isize) && (x as isize) <= s + 1;
-		});
-
-	let mut display = String::with_capacity(W * H);
-	for y in 0..H {
-		for x in 0..W {
-			write!(display, "{}", if crt[y * W + x] { '#' } else { '.' }).unwrap();
-		}
-		writeln!(display).unwrap();
-	}
-
-	display
+		.take(W * H)
+		.map(|(s, c)| {
+			let x = (c % W) as isize;
+			if s - 1 <= x && x <= s + 1 {
+				'█'
+			} else {
+				'.'
+			}
+		})
+		.enumerate()
+		.flat_map(|(i, p)| {
+			if i % W == 0 {
+				Either::Left(['\n', p].into_iter())
+			} else {
+				Either::Right(iter::once(p))
+			}
+		})
+		.collect()
 }
 
-fn signal<'s>(input: &'s str) -> impl Iterator<Item = (isize, usize)> + 's {
+fn signal(input: &str) -> impl Iterator<Item = (isize, usize)> + '_ {
 	input
 		.lines()
 		.map(|l| l.split_once(' ').and_then(|(_, v)| v.parse::<isize>().ok()))
@@ -60,13 +60,33 @@ fn signal<'s>(input: &'s str) -> impl Iterator<Item = (isize, usize)> + 's {
 			let x = *s;
 			if let Some(v) = c {
 				*s = x + v;
-				Some(repeat_n(x, 2))
+				Some(iter::repeat_n(x, 2))
 			} else {
-				Some(repeat_n(x, 1))
+				Some(iter::repeat_n(x, 1))
 			}
 		})
 		.flatten()
 		.zip(0..)
+}
+
+enum Either<L, R> {
+	Left(L),
+	Right(R),
+}
+
+impl<L, R> Iterator for Either<L, R>
+where
+	L: Iterator,
+	R: Iterator<Item = L::Item>,
+{
+	type Item = <L as Iterator>::Item;
+
+	fn next(&mut self) -> Option<Self::Item> {
+		match self {
+			Either::Left(l) => l.next(),
+			Either::Right(r) => r.next(),
+		}
+	}
 }
 
 #[cfg(test)]
@@ -227,12 +247,13 @@ noop"#;
 
 	#[test]
 	fn part2_example() {
-		let answer = r#"##..##..##..##..##..##..##..##..##..##..
-###...###...###...###...###...###...###.
-####....####....####....####....####....
-#####.....#####.....#####.....#####.....
-######......######......######......####
-#######.......#######.......#######....."#;
+		let answer = r#"██..██..██..██..██..██..██..██..██..██..
+███...███...███...███...███...███...███.
+████....████....████....████....████....
+█████.....█████.....█████.....█████.....
+██████......██████......██████......████
+███████.......███████.......███████....."#;
+
 		assert_eq!(part2(INPUT).trim(), answer);
 	}
 }
