@@ -78,7 +78,7 @@ where
 	}
 
 	monkeys.sort_by(|a, b| b.times.cmp(&a.times));
-	monkeys[0].times * monkeys[1].times
+	monkeys.into_iter().map(|m| m.times).take(2).product()
 }
 
 struct Monkey {
